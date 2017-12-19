@@ -5,15 +5,6 @@ import Detail from "./pages/Detail";
 import NoMatch from "./pages/NoMatch";
 import Nav from "./components/Nav";
 
-// const App = () =>
-//   <div>
-//     <Nav />
-//     <Books />
-//   </div>;
-
-// export default App;
-
-
 const App = () =>
   <Router>
     <div>

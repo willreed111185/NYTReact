@@ -5,25 +5,58 @@ import API from "../../utils/API";
 import { Link } from "react-router-dom";
 import { Col, Row, Container } from "../../components/Grid";
 import { List, ListItem } from "../../components/List";
-import { Input, TextArea, FormBtn } from "../../components/Form";
+import Modal from 'react-modal';
+
+const customStyles = {
+  content : {
+    top                   : '50%',
+    left                  : '50%',
+    right                 : 'auto',
+    bottom                : 'auto',
+    marginRight           : '-50%',
+    transform             : 'translate(-50%, -50%)'
+  }
+};
+
 
 class Books extends Component {
   state = {
     books: [],
-    title: "",
-    author: "",
-    synopsis: ""
+    savedArticles: [],
+    articleTitle:"sample",
+    articleContent:"sample",
+    articleAuthor:"sample",
+    articleNote:"sample",
+    modalIsOpen: false
   };
 
   componentDidMount() {
     this.loadBooks();
+    this.loadArticles();
+    console.log(this.state.savedArticles.title)
+  }
+
+  openModal() {
+    this.setState({modalIsOpen: true});
+  }
+  closeModal() {
+    this.setState({modalIsOpen: false});
   }
 
   loadBooks = () => {
     API.getBooks()
       .then(res =>
-        this.setState({ books: res.data, title: "", author: "", synopsis: "" })
+        this.setState({books: res.data})
       )
+      .then(console.log(this.state.books))
+      .catch(err => console.log(err));
+  };
+
+  loadArticles = () => {
+    API.getArticles()
+      .then(results =>
+        this.setState({savedArticles: results.data.results})
+        )
       .catch(err => console.log(err));
   };
 
@@ -33,64 +66,50 @@ class Books extends Component {
       .catch(err => console.log(err));
   };
 
-  handleInputChange = event => {
-    const { name, value } = event.target;
-    this.setState({
-      [name]: value
-    });
-  };
-
-  handleFormSubmit = event => {
+  handleArticleSubmit = event => {
     event.preventDefault();
-    if (this.state.title && this.state.author) {
-      API.saveBook({
-        title: this.state.title,
-        author: this.state.author,
-        synopsis: this.state.synopsis
-      })
-        .then(res => this.loadBooks())
+      API.saveNote({
+            note: this.state.articleNote,
+            title: this.state.articleTitle,
+            author: this.state.articleAuthor,
+            synopsis: this.state.articleContent
+          })
+        .then(res => this.getABook())
         .catch(err => console.log(err));
-    }
-  };
+      console.log(this.state)
+    };
 
   render() {
     return (
       <Container fluid>
         <Row>
-          <Col size="md-6">
+          <Col size="md-12">
             <Jumbotron>
-              <h1>NYT CRAWLER</h1>
+              <h1>Top Ten Articles to Read</h1>
             </Jumbotron>
-            <form>
-              <Input
-                value={this.state.title}
-                onChange={this.handleInputChange}
-                name="title"
-                placeholder="Title (required)"
-              />
-              <Input
-                value={this.state.author}
-                onChange={this.handleInputChange}
-                name="author"
-                placeholder="Author (required)"
-              />
-              <TextArea
-                value={this.state.synopsis}
-                onChange={this.handleInputChange}
-                name="synopsis"
-                placeholder="Synopsis (Optional)"
-              />
-              <FormBtn
-                disabled={!(this.state.author && this.state.title)}
-                onClick={this.handleFormSubmit}
-              >
-                Submit Book
-              </FormBtn>
-            </form>
+            {this.state.savedArticles.length ? (
+              <List>
+                {this.state.savedArticles.slice(0, 10).map(article => (
+                  <ListItem key={article.title}>
+                    <Link to={"/articles/" + article.index}>
+                      <strong>
+                        {article.title} by {article.author}
+                      </strong>
+                      <p>{article.abstract}</p>
+                    </Link>
+                    <button onClick={()=>this.openModal()}>Read More</button>
+                  </ListItem>
+                ))}
+              </List>
+            ) : (
+              <h3>No Results to Display</h3>
+            )}
           </Col>
-          <Col size="md-6 sm-12">
+        </Row>
+        <Row>
+          <Col size="md-12">
             <Jumbotron>
-              <h1>Books On My List</h1>
+              <h1>Saved Articles</h1>
             </Jumbotron>
             {this.state.books.length ? (
               <List>
@@ -110,6 +129,25 @@ class Books extends Component {
             )}
           </Col>
         </Row>
+        <div>
+          <Modal
+            isOpen={this.state.modalIsOpen}
+            onRequestClose={this.closeModal}
+            style={customStyles}
+            contentLabel="Example Modal"
+          >
+          <h2>{this.state.articleTitle}</h2>
+          <h3>{this.state.articleAuthor}</h3>
+          <div>
+            <p>{this.state.articleContent}</p>
+          </div>
+          <form>
+            <input />
+            <button>Save Article</button>
+            <button onClick={()=>this.closeModal()}>Close</button>
+          </form>
+          </Modal>
+        </div>
       </Container>
     );
   }

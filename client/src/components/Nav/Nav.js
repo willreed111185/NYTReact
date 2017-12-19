@@ -1,7 +1,7 @@
 import React from "react";
 
 const Nav = () =>
-  <nav className="navbar navbar-inverse navbar-top">
+  <nav className="navbar navbar-inverse navbar-top" style={{backgroundColor: '#003366'}}>
     <div className="container-fluid">
       <div className="navbar-header">
         <button type="button" className="collapsed navbar-toggle">
