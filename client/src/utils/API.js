@@ -1,5 +1,5 @@
 import axios from "axios";
-const BASEURL = "http://api.nytimes.com/svc/topstories/v2/world.json?api-key=";
+const BASEURL = "https://api.nytimes.com/svc/topstories/v2/world.json?api-key=";
 const APIKEY = "1a0f6f4c3108448b8a33834f4188622f";
 
 
