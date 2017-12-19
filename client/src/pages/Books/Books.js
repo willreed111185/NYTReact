@@ -5,6 +5,7 @@ import API from "../../utils/API";
 import { Link } from "react-router-dom";
 import { Col, Row, Container } from "../../components/Grid";
 import { List, ListItem } from "../../components/List";
+import { TextArea } from "../../components/Form";
 import Modal from 'react-modal';
 
 const customStyles = {
@@ -27,17 +28,25 @@ class Books extends Component {
     articleContent:"sample",
     articleAuthor:"sample",
     articleNote:"sample",
+    articleID:"",
     modalIsOpen: false
   };
 
   componentDidMount() {
     this.loadBooks();
     this.loadArticles();
-    console.log(this.state.savedArticles.title)
+    //console.log(this.state.savedArticles.title)
   }
 
-  openModal() {
-    this.setState({modalIsOpen: true});
+  openModal(index) {
+    this.setState({
+      modalIsOpen: true,
+      articleTitle:this.state.savedArticles[index].title,
+      articleContent:this.state.savedArticles[index].abstract,
+      articleAuthor:this.state.savedArticles[index].byline,
+      articleID:Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15)
+    });
+    console.log(this.state.articleID)
   }
   closeModal() {
     this.setState({modalIsOpen: false});
@@ -48,7 +57,6 @@ class Books extends Component {
       .then(res =>
         this.setState({books: res.data})
       )
-      .then(console.log(this.state.books))
       .catch(err => console.log(err));
   };
 
@@ -67,17 +75,35 @@ class Books extends Component {
   };
 
   handleArticleSubmit = event => {
-    event.preventDefault();
-      API.saveNote({
-            note: this.state.articleNote,
-            title: this.state.articleTitle,
-            author: this.state.articleAuthor,
-            synopsis: this.state.articleContent
-          })
-        .then(res => this.getABook())
-        .catch(err => console.log(err));
-      console.log(this.state)
-    };
+  event.preventDefault();
+  API.saveBook(
+      {
+        title: this.state.articleTitle,
+        author: this.state.articleAuthor,
+        synopsis: this.state.articleContent,
+        note: this.state.articleNote
+      })
+    .then(res => this.loadArticles())
+    .catch(err => console.log(err));
+  };
+
+  handleInputChange = event => {
+    let newNote = {...this.state.articleNote};
+    newNote=event.target.value;
+    this.setState({articleNote:newNote})
+  };
+
+  iterateArticles(){
+    return(this.state.savedArticles.slice(0,10).map((article,index)=> (
+      <ListItem key={article.title}>
+          <strong>
+            {article.title} by {article.author}
+          </strong>
+          <p>{article.abstract}</p>
+        <button className={index} onClick={()=>this.openModal(index)}>Read More</button>
+      </ListItem>
+    )))
+  }
 
   render() {
     return (
@@ -89,17 +115,7 @@ class Books extends Component {
             </Jumbotron>
             {this.state.savedArticles.length ? (
               <List>
-                {this.state.savedArticles.slice(0, 10).map(article => (
-                  <ListItem key={article.title}>
-                    <Link to={"/articles/" + article.index}>
-                      <strong>
-                        {article.title} by {article.author}
-                      </strong>
-                      <p>{article.abstract}</p>
-                    </Link>
-                    <button onClick={()=>this.openModal()}>Read More</button>
-                  </ListItem>
-                ))}
+                {this.iterateArticles()}
               </List>
             ) : (
               <h3>No Results to Display</h3>
@@ -134,7 +150,8 @@ class Books extends Component {
             isOpen={this.state.modalIsOpen}
             onRequestClose={this.closeModal}
             style={customStyles}
-            contentLabel="Example Modal"
+            contentLabel="Reading Content"
+            ariaHideApp={false}
           >
           <h2>{this.state.articleTitle}</h2>
           <h3>{this.state.articleAuthor}</h3>
@@ -142,8 +159,13 @@ class Books extends Component {
             <p>{this.state.articleContent}</p>
           </div>
           <form>
-            <input />
-            <button>Save Article</button>
+            <TextArea
+                    name="articleNote"
+                    value={this.state.savedArticles.articleNote}
+                    onChange = {this.handleInputChange}
+                    style={{ height: 150 }}
+                  />
+            <button onClick={this.handleArticleSubmit}>Save Article</button>
             <button onClick={()=>this.closeModal()}>Close</button>
           </form>
           </Modal>
