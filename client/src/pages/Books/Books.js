@@ -83,7 +83,7 @@ class Books extends Component {
         synopsis: this.state.articleContent,
         note: this.state.articleNote
       })
-    .then(res => this.loadArticles())
+    .then(res => this.loadBooks())
     .catch(err => console.log(err));
   };
 
