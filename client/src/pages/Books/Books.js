@@ -35,7 +35,6 @@ class Books extends Component {
   componentDidMount() {
     this.loadBooks();
     this.loadArticles();
-    //console.log(this.state.savedArticles.title)
   }
 
   openModal(index) {
@@ -75,7 +74,8 @@ class Books extends Component {
   };
 
   handleArticleSubmit = event => {
-  event.preventDefault();
+  //event.preventDefault();
+  this.closeModal();
   API.saveBook(
       {
         title: this.state.articleTitle,
@@ -90,7 +90,7 @@ class Books extends Component {
   handleInputChange = event => {
     let newNote = {...this.state.articleNote};
     newNote=event.target.value;
-    this.setState({articleNote:newNote})
+    this.setState({articleNote:newNote});
   };
 
   iterateArticles(){
@@ -165,7 +165,10 @@ class Books extends Component {
                     onChange = {this.handleInputChange}
                     style={{ height: 150 }}
                   />
-            <button onClick={this.handleArticleSubmit}>Save Article</button>
+            <button 
+              onClick={this.handleArticleSubmit}
+              to={"/books/"}
+            >Save Article</button>
             <button onClick={()=>this.closeModal()}>Close</button>
           </form>
           </Modal>
